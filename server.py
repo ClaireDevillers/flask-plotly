@@ -1,6 +1,5 @@
-# reserved: flask.py
-# run with: flask --app server run --debug
-# or flask --app server run --host=0.0.0.0 --debug
+# lancer: flask --app server run --debug
+# ou: flask --app server run --host=0.0.0.0 --debug
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from markupsafe import escape
@@ -8,31 +7,39 @@ from flask import render_template
 from flask import abort, redirect, url_for
 from flask import request, session
 
-# db = SQLAlchemy()
+db = SQLAlchemy()
 app = Flask(__name__)
-# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
-# db.init_app(app)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
+db.init_app(app)
 
-# class User(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     username = db.Column(db.String, unique=True, nullable=False)
-#     email = db.Column(db.String)
+class Client(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String, unique=True, nullable=False)
+    email = db.Column(db.String)
          
+with app.app_context():
+    db.create_all()
 
-# with app.app_context():
-#     db.create_all()
+@app.get('/populate')
+def create_users():
+        for i in range(1,5):
+            client = Client(
+                username=f"claire{i}",
+                email=f"clairedevillersca+{i}@gmail.com",
+            )
+            db.session.add(client)
+            db.session.commit()
+        return redirect(url_for("index"))  
 
-# @app.get('/utilisation/<client>')
-# def hello(client=None):
-#     return render_template('utilisation.html', client=client)
+@app.route("/")
+def index():
+    clients = db.session.execute(db.select(Client).order_by(Client.username)).scalars()
+    return render_template('index.html', clients=clients)
 
-@app.route("/") # <-- quel address
-def hello_world():
-    return "<p>Hello, World!</p>"
-
-@app.route("/userprofile") # <-- quel address
-def profile():
-    return render_template('utilisation.html')
+@app.route("/utilisation/<int:client>")
+def utilisation(client=None):
+    client = db.session.query(Client).get(1)
+    return render_template('utilisation.html',client=client)
 
 # sample routes
 # @app.route('/2')
@@ -73,15 +80,6 @@ def profile():
 #         #"image": url_for("user_image", filename=user.image),
 #     }
 
-# @app.get('/populate')
-# def create_users():
-#         user = User(
-#             username="claire2",
-#             email="clairedevillersca@gmail.com",
-#         )
-#         db.session.add(user)
-#         db.session.commit()
-#         return redirect(url_for("user_list"))    
 
 # @app.route("/users")
 # def user_list():

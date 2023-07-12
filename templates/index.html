@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flask demo</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main/style.css') }}">
+</head>
+
+<body>
+
+  {% if clients %}
+  <div>List of clients in database:
+    {% for client in clients %}
+    <li><a href="/utilisation/{{ client.id }}">{{ client.username }} ({{ client.email }})</a></li>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div>There are no clients in the database.</div>
+  {% endif %}
+</body>
+
+</html>
